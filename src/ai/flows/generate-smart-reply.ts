@@ -64,8 +64,6 @@ User's goal for the reply: "{{{goal}}}".
 Some additional context from the user: "{{{additionalContext}}}".
 {{/if}}
 
-The replies should be in {{{language}}}. If the language is "hi", this means Hinglish (English transliterated into Hindi).
-
 {{#if tone}}
 The user wants the reply to have a {{{tone}}} tone. Please adapt your suggestions to reflect this.
 If the tone is "funny", aim for humor and light-heartedness. For instance, if someone says 'I'm so tired', a funny reply could be 'Hi So Tired, I'm ReplyCraft! Wanna nap together?'.
@@ -78,7 +76,10 @@ If the tone is "formal", be polite, respectful, and use proper, professional lan
 The user wants a generally witty, real, and engaging tone. Default tone: witty and real.
 {{/if}}
 
-Based on all this information, what are some good replies? Make sure they are concise and sound natural, funny, and emotionally in-sync — like a best friend replying.`,
+IMPORTANT: The replies MUST be in the specified language: {{{language}}}.
+If the language is "hi" (Hinglish), this means a mix of Hindi and English words, using Roman script for Hindi words. For example: "Scene kya hai?" or "Bahut funny tha yaar!". Ensure the Hinglish sounds natural, is commonly used by Gen-Z in India, and avoids Devanagari script.
+
+Based on all this information, what are some good replies? Make sure they are concise and sound natural, funny, and emotionally in-sync — like a best friend replying in the requested language.`,
 });
 
 const generateSmartReplyFlow = ai.defineFlow(
