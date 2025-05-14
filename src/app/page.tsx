@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -18,7 +19,7 @@ import { generateSmartReply } from '@/ai/flows/generate-smart-reply';
 import type { GenerateSmartReplyInput, GenerateSmartReplyOutput } from '@/ai/flows/generate-smart-reply';
 import { useToast } from "@/hooks/use-toast";
 import { ReplyCard } from '@/components/reply-card';
-import { MessageSquare, Sparkles, Loader2 } from 'lucide-react';
+import { MessageSquare, Sparkles, Loader2, Settings, Zap } from 'lucide-react';
 
 const uiTranslations = {
   en: {
@@ -75,6 +76,18 @@ const uiTranslations = {
     additionalContextLabel: "📝 Context (optional):",
     additionalContextPlaceholder: "e.g., We argued last night, now he texted hey",
     generateRepliesButton: "Generate Replies",
+    normalModeLabel: "Normal Mode",
+    proModeLabel: "Pro Mode",
+    chooseYourVibeTitle: "Choose Your Vibe",
+    noRepliesGeneratedTitle: "No Replies Generated",
+    noRepliesGeneratedDescription: "The AI couldn't come up with replies for this one. Try rephrasing or adding more context!",
+    errorTitle: "Error",
+    errorDescriptionPrefix: "Could not generate replies.",
+    copiedTitle: "Copied!",
+    copiedDescription: "Reply copied to clipboard.",
+    copyFailedTitle: "Copy Failed",
+    copyFailedDescription: "Could not copy text to clipboard.",
+    cookingRepliesText: "Cooking up some fire replies...",
   },
   hi: {
     craftYourReplyTitle: "Apna Reply Banao",
@@ -83,7 +96,7 @@ const uiTranslations = {
     englishLabel: "English",
     hinglishLabel: "Hinglish",
     replyToneLabel: "Mood Chunein:",
-    toneDefaultPlaceholder: "✨ Witty (Default)", // Kept English as per common practice for such defaults unless specified
+    toneDefaultPlaceholder: "✨ Witty (Default)",
     toneFunnyLabel: "😂 Mazakiya",
     toneFlirtyLabel: "😘 Thoda Flirt Wala",
     toneSavageLabel: "😈 Teda-Meda",
@@ -112,15 +125,15 @@ const uiTranslations = {
     vibeGhostedMeLabel: "👻 Ignore Kiya Gaya",
     vibeCloseFriendLabel: "🤗 Khaas Dost",
     vibeWorkModeLabel: "💼 Kaam Ka Mood",
-    moodLabel: "ემო Mood:", // Kept English label as Hinglish version was not in the table
+    moodLabel: "ემო Mood:",
     moodDefaultPlaceholder: "Mood Chuno (Optional)",
-    moodHappyLabel: "😊 Happy", // Assuming Hinglish uses same for these, or just the text part
+    moodHappyLabel: "😊 Happy",
     moodAnnoyedLabel: "😠 Annoyed",
     moodConfusedLabel: "😕 Confused",
     moodNervousLabel: "😬 Nervous",
     moodHeartbrokenLabel: "💔 Heartbroken",
     moodNeutralLabel: "😐 Neutral",
-    goalLabel: "🎯 Goal for Reply:", // Kept English label as Hinglish version was not in the table
+    goalLabel: "🎯 Goal for Reply:",
     goalDefaultPlaceholder: "Goal Chuno (Optional)",
     goalImpressLabel: "😎 Impress",
     goalTeaseLabel: "😜 Tease",
@@ -130,6 +143,18 @@ const uiTranslations = {
     additionalContextLabel: "Aur Kya Scene Hai?:",
     additionalContextPlaceholder: "jaise, Hum kal raat lade, ab usne hey bheja hai",
     generateRepliesButton: "Banayein",
+    normalModeLabel: "Normal Mode",
+    proModeLabel: "Pro Mode",
+    chooseYourVibeTitle: "Apna Vibe Chuno",
+    noRepliesGeneratedTitle: "Koi Reply Nahi Mila",
+    noRepliesGeneratedDescription: "AI iske liye reply nahi soch paya. Context badal ke dekho!",
+    errorTitle: "Galti Ho Gayi",
+    errorDescriptionPrefix: "Reply nahi ban paya.",
+    copiedTitle: "Copy Ho Gaya!",
+    copiedDescription: "Reply clipboard mein copy ho gaya.",
+    copyFailedTitle: "Copy Nahi Hua",
+    copyFailedDescription: "Reply clipboard mein copy nahi ho paya.",
+    cookingRepliesText: "Kadak replies ban rahe hain...",
   }
 };
 
@@ -151,6 +176,7 @@ const ReplyCraftPage: FC = () => {
   const [selectedMood, setSelectedMood] = useState<GenerateSmartReplyInput['mood']>(undefined);
   const [selectedGoal, setSelectedGoal] = useState<GenerateSmartReplyInput['goal']>(undefined);
   const [additionalContext, setAdditionalContext] = useState<string>('');
+  const [isProMode, setIsProMode] = useState<boolean>(false);
 
   const [replies, setReplies] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -212,7 +238,7 @@ const ReplyCraftPage: FC = () => {
 
   const handleGenerateReplies = async () => {
     if (!message.trim()) {
-      setError("Please enter a message to get replies for."); // TODO: Localize
+      setError(T.messagePlaceholder); // Use translated string
       return;
     }
     setIsLoading(true);
@@ -223,29 +249,29 @@ const ReplyCraftPage: FC = () => {
       const input: GenerateSmartReplyInput = { 
         message, 
         language, 
-        tone: selectedTone,
-        timing,
-        senderType,
-        relationshipVibe,
-        mood: selectedMood,
-        goal: selectedGoal,
-        additionalContext: additionalContext.trim() || undefined,
+        tone: isProMode ? selectedTone : undefined,
+        timing: isProMode ? timing : undefined,
+        senderType: isProMode ? senderType : undefined,
+        relationshipVibe: isProMode ? relationshipVibe : undefined,
+        mood: isProMode ? selectedMood : undefined,
+        goal: isProMode ? selectedGoal : undefined,
+        additionalContext: isProMode && additionalContext.trim() ? additionalContext.trim() : undefined,
       };
       const result: GenerateSmartReplyOutput = await generateSmartReply(input);
       setReplies(result.replies);
       if (result.replies.length === 0) {
-        toast({ // TODO: Localize
-          title: "No Replies Generated",
-          description: "The AI couldn't come up with replies for this one. Try rephrasing or adding more context!",
+        toast({ 
+          title: T.noRepliesGeneratedTitle,
+          description: T.noRepliesGeneratedDescription,
         });
       }
     } catch (e) {
       console.error("Error generating replies:", e);
       const errorMessage = e instanceof Error ? e.message : "An unknown error occurred.";
-      setError(`Failed to generate replies: ${errorMessage}`); // TODO: Localize
-      toast({ // TODO: Localize
-        title: "Error",
-        description: `Could not generate replies. ${errorMessage}`,
+      setError(`${T.errorDescriptionPrefix} ${errorMessage}`); 
+      toast({ 
+        title: T.errorTitle,
+        description: `${T.errorDescriptionPrefix} ${errorMessage}`,
         variant: "destructive",
       });
     } finally {
@@ -256,16 +282,16 @@ const ReplyCraftPage: FC = () => {
   const handleCopyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
       .then(() => {
-        toast({ // TODO: Localize
-          title: "Copied!",
-          description: "Reply copied to clipboard.",
+        toast({ 
+          title: T.copiedTitle,
+          description: T.copiedDescription,
         });
       })
       .catch(err => {
         console.error("Failed to copy text: ", err);
-        toast({ // TODO: Localize
-          title: "Copy Failed",
-          description: "Could not copy text to clipboard.",
+        toast({ 
+          title: T.copyFailedTitle,
+          description: T.copyFailedDescription,
           variant: "destructive",
         });
       });
@@ -291,6 +317,21 @@ const ReplyCraftPage: FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6 p-6">
+            <div className="flex items-center space-x-2 mb-4 justify-end">
+              <Label htmlFor="mode-switch" className={`text-sm font-medium ${!isProMode ? 'text-primary' : 'text-muted-foreground'}`}>
+                <Zap className="inline-block mr-1 h-4 w-4" /> {T.normalModeLabel}
+              </Label>
+              <Switch
+                id="mode-switch"
+                checked={isProMode}
+                onCheckedChange={setIsProMode}
+                aria-label="Toggle Pro Mode"
+              />
+              <Label htmlFor="mode-switch" className={`text-sm font-medium ${isProMode ? 'text-primary' : 'text-muted-foreground'}`}>
+                <Settings className="inline-block mr-1 h-4 w-4" /> {T.proModeLabel}
+              </Label>
+            </div>
+
             <Textarea
               placeholder={T.messagePlaceholder}
               value={message}
@@ -310,180 +351,184 @@ const ReplyCraftPage: FC = () => {
                   </TabsList>
                 </Tabs>
               </div>
-              <div>
-                <Label htmlFor="tone-select" className="block text-sm font-medium text-foreground mb-1.5">{T.replyToneLabel}</Label>
-                <Select
-                  value={selectedTone === undefined ? DEFAULT_TONE_VALUE : selectedTone} 
-                  onValueChange={(value: string) => {
-                    if (value === DEFAULT_TONE_VALUE) {
-                      setSelectedTone(undefined);
-                    } else {
-                      setSelectedTone(value as NonNullable<GenerateSmartReplyInput['tone']>);
-                    }
-                  }}
-                >
-                  <SelectTrigger id="tone-select" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={DEFAULT_TONE_VALUE}>{T.toneDefaultPlaceholder}</SelectItem>
-                    {toneOptions.map(t => (
-                      <SelectItem key={t.value} value={t.value}>
-                        {t.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {isProMode && (
+                <div>
+                  <Label htmlFor="tone-select" className="block text-sm font-medium text-foreground mb-1.5">{T.replyToneLabel}</Label>
+                  <Select
+                    value={selectedTone === undefined ? DEFAULT_TONE_VALUE : selectedTone} 
+                    onValueChange={(value: string) => {
+                      if (value === DEFAULT_TONE_VALUE) {
+                        setSelectedTone(undefined);
+                      } else {
+                        setSelectedTone(value as NonNullable<GenerateSmartReplyInput['tone']>);
+                      }
+                    }}
+                  >
+                    <SelectTrigger id="tone-select" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={DEFAULT_TONE_VALUE}>{T.toneDefaultPlaceholder}</SelectItem>
+                      {toneOptions.map(t => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
 
-            <div className="space-y-4 pt-4 border-t border-border/50">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="sender-type-select" className="block text-sm font-medium text-foreground mb-1.5">{T.senderTypeLabel}</Label>
-                  <Select
-                    value={senderType === undefined ? DEFAULT_SENDER_TYPE_VALUE : senderType}
-                    onValueChange={(value: string) => {
-                      if (value === DEFAULT_SENDER_TYPE_VALUE) {
-                        setSenderType(undefined);
-                      } else {
-                        setSenderType(value as NonNullable<GenerateSmartReplyInput['senderType']>);
-                      }
-                    }}
-                  >
-                    <SelectTrigger id="sender-type-select" className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={DEFAULT_SENDER_TYPE_VALUE}>{T.senderDefaultPlaceholder}</SelectItem>
-                      {senderTypeOptions.map(t => (
-                        <SelectItem key={t.value} value={t.value}>
-                          {t.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+            {isProMode && (
+              <div className="space-y-4 pt-4 border-t border-border/50">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="sender-type-select" className="block text-sm font-medium text-foreground mb-1.5">{T.senderTypeLabel}</Label>
+                    <Select
+                      value={senderType === undefined ? DEFAULT_SENDER_TYPE_VALUE : senderType}
+                      onValueChange={(value: string) => {
+                        if (value === DEFAULT_SENDER_TYPE_VALUE) {
+                          setSenderType(undefined);
+                        } else {
+                          setSenderType(value as NonNullable<GenerateSmartReplyInput['senderType']>);
+                        }
+                      }}
+                    >
+                      <SelectTrigger id="sender-type-select" className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={DEFAULT_SENDER_TYPE_VALUE}>{T.senderDefaultPlaceholder}</SelectItem>
+                        {senderTypeOptions.map(t => (
+                          <SelectItem key={t.value} value={t.value}>
+                            {t.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="relationship-vibe-select" className="block text-sm font-medium text-foreground mb-1.5">{T.relationshipVibeLabel}</Label>
+                    <Select
+                      value={relationshipVibe === undefined ? DEFAULT_RELATIONSHIP_VIBE_VALUE : relationshipVibe}
+                      onValueChange={(value: string) => {
+                        if (value === DEFAULT_RELATIONSHIP_VIBE_VALUE) {
+                          setRelationshipVibe(undefined);
+                        } else {
+                          setRelationshipVibe(value as NonNullable<GenerateSmartReplyInput['relationshipVibe']>);
+                        }
+                      }}
+                    >
+                      <SelectTrigger id="relationship-vibe-select" className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={DEFAULT_RELATIONSHIP_VIBE_VALUE}>{T.vibeDefaultPlaceholder}</SelectItem>
+                        {relationshipVibeOptions.map(t => (
+                          <SelectItem key={t.value} value={t.value}>
+                            {t.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
-                <div>
-                  <Label htmlFor="relationship-vibe-select" className="block text-sm font-medium text-foreground mb-1.5">{T.relationshipVibeLabel}</Label>
-                  <Select
-                    value={relationshipVibe === undefined ? DEFAULT_RELATIONSHIP_VIBE_VALUE : relationshipVibe}
-                    onValueChange={(value: string) => {
-                      if (value === DEFAULT_RELATIONSHIP_VIBE_VALUE) {
-                        setRelationshipVibe(undefined);
-                      } else {
-                        setRelationshipVibe(value as NonNullable<GenerateSmartReplyInput['relationshipVibe']>);
-                      }
-                    }}
-                  >
-                    <SelectTrigger id="relationship-vibe-select" className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={DEFAULT_RELATIONSHIP_VIBE_VALUE}>{T.vibeDefaultPlaceholder}</SelectItem>
-                      {relationshipVibeOptions.map(t => (
-                        <SelectItem key={t.value} value={t.value}>
-                          {t.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="timing-select" className="block text-sm font-medium text-foreground mb-1.5">{T.timingLabel}</Label>
+                    <Select
+                      value={timing === undefined ? DEFAULT_TIMING_VALUE : timing}
+                      onValueChange={(value: string) => {
+                        if (value === DEFAULT_TIMING_VALUE) {
+                          setTiming(undefined);
+                        } else {
+                          setTiming(value as NonNullable<GenerateSmartReplyInput['timing']>);
+                        }
+                      }}
+                    >
+                      <SelectTrigger id="timing-select" className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={DEFAULT_TIMING_VALUE}>{T.timingDefaultPlaceholder}</SelectItem>
+                        {timingOptions.map(t => (
+                          <SelectItem key={t.value} value={t.value}>
+                            {t.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="mood-select" className="block text-sm font-medium text-foreground mb-1.5">{T.moodLabel}</Label>
+                    <Select
+                      value={selectedMood === undefined ? DEFAULT_MOOD_VALUE : selectedMood}
+                      onValueChange={(value: string) => {
+                        if (value === DEFAULT_MOOD_VALUE) {
+                          setSelectedMood(undefined);
+                        } else {
+                          setSelectedMood(value as NonNullable<GenerateSmartReplyInput['mood']>);
+                        }
+                      }}
+                    >
+                      <SelectTrigger id="mood-select" className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={DEFAULT_MOOD_VALUE}>{T.moodDefaultPlaceholder}</SelectItem>
+                        {moodOptions.map(t => (
+                          <SelectItem key={t.value} value={t.value}>
+                            {t.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="timing-select" className="block text-sm font-medium text-foreground mb-1.5">{T.timingLabel}</Label>
-                  <Select
-                    value={timing === undefined ? DEFAULT_TIMING_VALUE : timing}
-                    onValueChange={(value: string) => {
-                      if (value === DEFAULT_TIMING_VALUE) {
-                        setTiming(undefined);
-                      } else {
-                        setTiming(value as NonNullable<GenerateSmartReplyInput['timing']>);
-                      }
-                    }}
-                  >
-                    <SelectTrigger id="timing-select" className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={DEFAULT_TIMING_VALUE}>{T.timingDefaultPlaceholder}</SelectItem>
-                      {timingOptions.map(t => (
-                        <SelectItem key={t.value} value={t.value}>
-                          {t.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                 <div>
-                  <Label htmlFor="mood-select" className="block text-sm font-medium text-foreground mb-1.5">{T.moodLabel}</Label>
-                  <Select
-                    value={selectedMood === undefined ? DEFAULT_MOOD_VALUE : selectedMood}
-                    onValueChange={(value: string) => {
-                      if (value === DEFAULT_MOOD_VALUE) {
-                        setSelectedMood(undefined);
-                      } else {
-                        setSelectedMood(value as NonNullable<GenerateSmartReplyInput['mood']>);
-                      }
-                    }}
-                  >
-                    <SelectTrigger id="mood-select" className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={DEFAULT_MOOD_VALUE}>{T.moodDefaultPlaceholder}</SelectItem>
-                      {moodOptions.map(t => (
-                        <SelectItem key={t.value} value={t.value}>
-                          {t.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-             
-              <div>
-                <Label htmlFor="goal-select" className="block text-sm font-medium text-foreground mb-1.5">{T.goalLabel}</Label>
-                <Select
-                  value={selectedGoal === undefined ? DEFAULT_GOAL_VALUE : selectedGoal}
-                  onValueChange={(value: string) => {
-                    if (value === DEFAULT_GOAL_VALUE) {
-                      setSelectedGoal(undefined);
-                    } else {
-                      setSelectedGoal(value as NonNullable<GenerateSmartReplyInput['goal']>);
-                    }
-                  }}
-                >
-                  <SelectTrigger id="goal-select" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={DEFAULT_GOAL_VALUE}>{T.goalDefaultPlaceholder}</SelectItem>
-                    {goalOptions.map(t => (
-                      <SelectItem key={t.value} value={t.value}>
-                        {t.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
               
-              <div>
-                <Label htmlFor="additional-context" className="block text-sm font-medium text-foreground mb-1.5">{T.additionalContextLabel}</Label>
-                <Textarea
-                  id="additional-context"
-                  placeholder={T.additionalContextPlaceholder}
-                  value={additionalContext}
-                  onChange={(e) => setAdditionalContext(e.target.value)}
-                  rows={2}
-                  className="resize-none text-base"
-                  aria-label="Additional context"
-                />
+                <div>
+                  <Label htmlFor="goal-select" className="block text-sm font-medium text-foreground mb-1.5">{T.goalLabel}</Label>
+                  <Select
+                    value={selectedGoal === undefined ? DEFAULT_GOAL_VALUE : selectedGoal}
+                    onValueChange={(value: string) => {
+                      if (value === DEFAULT_GOAL_VALUE) {
+                        setSelectedGoal(undefined);
+                      } else {
+                        setSelectedGoal(value as NonNullable<GenerateSmartReplyInput['goal']>);
+                      }
+                    }}
+                  >
+                    <SelectTrigger id="goal-select" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={DEFAULT_GOAL_VALUE}>{T.goalDefaultPlaceholder}</SelectItem>
+                      {goalOptions.map(t => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label htmlFor="additional-context" className="block text-sm font-medium text-foreground mb-1.5">{T.additionalContextLabel}</Label>
+                  <Textarea
+                    id="additional-context"
+                    placeholder={T.additionalContextPlaceholder}
+                    value={additionalContext}
+                    onChange={(e) => setAdditionalContext(e.target.value)}
+                    rows={2}
+                    className="resize-none text-base"
+                    aria-label="Additional context"
+                  />
+                </div>
               </div>
-            </div>
+            )}
             
             <Button 
               onClick={handleGenerateReplies} 
@@ -506,7 +551,7 @@ const ReplyCraftPage: FC = () => {
         {replies.length > 0 && (
           <section className="space-y-6">
             <h2 className="text-3xl font-bold text-center text-primary">
-              Choose Your Vibe 
+              {T.chooseYourVibeTitle}
             </h2>
             <div className="grid gap-4 md:gap-6">
               {replies.map((reply, index) => (
@@ -519,7 +564,7 @@ const ReplyCraftPage: FC = () => {
         {isLoading && replies.length === 0 && (
            <div className="text-center space-y-4 py-8">
              <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-             <p className="text-muted-foreground text-lg">Cooking up some fire replies...</p>
+             <p className="text-muted-foreground text-lg">{T.cookingRepliesText}</p>
            </div>
         )}
 
@@ -532,5 +577,6 @@ const ReplyCraftPage: FC = () => {
 };
 
 export default ReplyCraftPage;
+    
 
     
