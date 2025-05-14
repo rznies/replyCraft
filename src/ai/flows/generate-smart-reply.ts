@@ -39,7 +39,7 @@ const generateSmartReplyPrompt = ai.definePrompt({
   output: {schema: GenerateSmartReplyOutputSchema},
   prompt: `You are an expert in crafting witty, context-aware, and emotionally intelligent text message replies.
 Generate a few distinct reply suggestions (each under 20 words) for the user.
-The replies should be in {{{language}}}{{#if (eq language "hi")}} (Hinglish: English transliterated into Hindi){{/if}}.
+The replies should be in {{{language}}}. If the language is "hi", this means Hinglish (English transliterated into Hindi).
 
 Here's the situation:
 The user received the message: "{{{message}}}"
