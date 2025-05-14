@@ -52,7 +52,7 @@ This message is from their {{{senderType}}}.
 Their relationship vibe with this person is "{{{relationshipVibe}}}".
 {{/if}}
 {{#if timing}}
-The message was received during the {{{timing}}}.
+The message was received during the {{{timing}}}. If it's 'morning', lean towards lighter greetings and a generally positive tone for replies.
 {{/if}}
 {{#if mood}}
 User mood: "{{{mood}}}".
@@ -61,13 +61,14 @@ User mood: "{{{mood}}}".
 User's goal for the reply: "{{{goal}}}".
 {{/if}}
 {{#if additionalContext}}
-Some additional context from the user: "{{{additionalContext}}}".
+Some additional context from the user: "{{{additionalContext}}}". This is SUPER important for understanding the full picture and emotional nuances. Use this to really nail the reply.
 {{/if}}
 
 Now, pay close attention to these special interaction dynamics. If these conditions match the input, they take precedence and should heavily influence the reply style, in conjunction with the overall chosen tone:
 - If the sender is an 'ex' AND the relationship vibe is 'ghostedMe': The reply should carry an edge of sass, confidence, or dignified restraint. The goal is to show self-respect and not appear overly eager or affected. For example, if the tone is 'savage', be direct and dismissive. If 'formal', maintain polite distance. If 'funny', a dry, witty remark is appropriate.
 - If the sender is a 'crush' AND the relationship vibe is 'justMet' AND the desired tone is 'flirty': The reply should be warm, engaging, and subtly charming, hinting at interest without being too forward or overly eager. Keep it playful and light, reflecting the early stage of getting to know each other.
 - If the sender is a 'parent' AND the desired tone is 'funny': The humor must be respectful and light-hearted, appropriate for a parent-child dynamic. Avoid anything too edgy, sarcastic in a way that could be misunderstood, or that might cause worry.
+- If the sender is an 'ex' AND the timing is 'lateNight': Be particularly cautious. Avoid overly vulnerable replies unless the explicit tone is 'sweet'. The goal here is often self-preservation and not re-opening old wounds unless clearly intended by the user's chosen 'sweet' tone. For other tones, maintain a more guarded or assertive stance.
 
 {{#if tone}}
 The user wants the reply to have a {{{tone}}} tone. Please adapt your suggestions to reflect this, keeping the above special dynamics in mind if they apply.
