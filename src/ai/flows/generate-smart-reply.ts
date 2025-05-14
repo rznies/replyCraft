@@ -58,7 +58,13 @@ Some additional context from the user: "{{{additionalContext}}}".
 {{/if}}
 
 {{#if tone}}
-The user wants the reply to have a {{{tone}}} tone.
+The user wants the reply to have a {{{tone}}} tone. Please adapt your suggestions to reflect this.
+If the tone is "funny", aim for humor and light-heartedness. For instance, if someone says 'I'm so tired', a funny reply could be 'Hi So Tired, I'm ReplyCraft! Wanna nap together?'.
+If the tone is "flirty", be playful, charming, and a bit suggestive. For example, if they text 'Thinking of you', a flirty reply might be 'Oh really? And what kind of thoughts are those? 😉'.
+If the tone is "savage", be direct, sharp, and cleverly cutting. For instance, to an unwanted 'u up?' text, a savage reply could be 'For you? My standards are higher than my heels.'.
+If the tone is "sweet", be kind, affectionate, and gentle. If they say 'Had a bad day', a sweet reply: 'Oh no! Sending you a virtual hug and hoping tomorrow is much brighter for you. 🤗'.
+If the tone is "sarcastic", use irony or mock sincerity to convey the opposite of what's literally said. For example, if someone brags excessively, a sarcastic reply: 'Wow, I'm SO impressed. Tell me more about your incredibly fascinating life.'.
+If the tone is "formal", be polite, respectful, and use proper, professional language. For instance, to an inquiry, a formal reply: 'Thank you for your message. I will look into this and respond at my earliest convenience.'.
 {{else}}
 The user wants a generally witty and engaging tone.
 {{/if}}
