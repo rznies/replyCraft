@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -27,13 +28,46 @@ const toneOptions: { value: NonNullable<GenerateSmartReplyInput['tone']>; label:
   { value: "sarcastic", label: "😒 Sarcastic" },
   { value: "formal", label: "👔 Formal" },
 ];
-
 const DEFAULT_TONE_ITEM_VALUE = "__replycraft_default_tone__";
+
+const timingOptions: { value: NonNullable<GenerateSmartReplyInput['timing']>; label: string }[] = [
+  { value: 'morning', label: '🌞 Morning' },
+  { value: 'afternoon', label: '☀️ Afternoon' },
+  { value: 'evening', label: '🌆 Evening' },
+  { value: 'lateNight', label: '🌙 Late Night' },
+];
+const DEFAULT_TIMING_VALUE = "__replycraft_default_timing__";
+
+const senderTypeOptions: { value: NonNullable<GenerateSmartReplyInput['senderType']>; label: string }[] = [
+  { value: 'friend', label: '🫂 Friend' },
+  { value: 'crush', label: '😍 Crush' },
+  { value: 'ex', label: '💔 Ex' },
+  { value: 'parent', label: '👨‍👩‍👧‍👦 Parent' },
+  { value: 'stranger', label: '❓ Stranger' },
+  { value: 'boss', label: '👔 Boss' },
+];
+const DEFAULT_SENDER_TYPE_VALUE = "__replycraft_default_sender_type__";
+
+const relationshipVibeOptions: { value: NonNullable<GenerateSmartReplyInput['relationshipVibe']>; label: string }[] = [
+  { value: 'justMet', label: '🤝 Just Met' },
+  { value: 'complicated', label: "🤔 It's Complicated" },
+  { value: 'oldFlame', label: '🔥 Old Flame' },
+  { value: 'ghostedMe', label: '👻 Ghosted Me' },
+  { value: 'closeFriend', label: '🤗 Close Friend' },
+  { value: 'workMode', label: '💼 Work Mode' },
+];
+const DEFAULT_RELATIONSHIP_VIBE_VALUE = "__replycraft_default_relationship_vibe__";
+
 
 const ReplyCraftPage: FC = () => {
   const [message, setMessage] = useState<string>('');
   const [language, setLanguage] = useState<GenerateSmartReplyInput['language']>('en');
   const [selectedTone, setSelectedTone] = useState<GenerateSmartReplyInput['tone']>(undefined);
+  const [timing, setTiming] = useState<GenerateSmartReplyInput['timing']>(undefined);
+  const [senderType, setSenderType] = useState<GenerateSmartReplyInput['senderType']>(undefined);
+  const [relationshipVibe, setRelationshipVibe] = useState<GenerateSmartReplyInput['relationshipVibe']>(undefined);
+  const [additionalContext, setAdditionalContext] = useState<string>('');
+
   const [replies, setReplies] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,13 +83,21 @@ const ReplyCraftPage: FC = () => {
     setReplies([]);
 
     try {
-      const input: GenerateSmartReplyInput = { message, language, tone: selectedTone };
+      const input: GenerateSmartReplyInput = { 
+        message, 
+        language, 
+        tone: selectedTone,
+        timing,
+        senderType,
+        relationshipVibe,
+        additionalContext: additionalContext.trim() || undefined, // Send undefined if empty
+      };
       const result: GenerateSmartReplyOutput = await generateSmartReply(input);
       setReplies(result.replies);
       if (result.replies.length === 0) {
         toast({
           title: "No Replies Generated",
-          description: "The AI couldn't come up with replies for this one. Try rephrasing!",
+          description: "The AI couldn't come up with replies for this one. Try rephrasing or adding more context!",
         });
       }
     } catch (e) {
@@ -114,61 +156,154 @@ const ReplyCraftPage: FC = () => {
               placeholder="What did they text you? Spill the tea..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              rows={4}
+              rows={3}
               className="resize-none text-base border-2 focus:border-primary focus:ring-primary"
               aria-label="Incoming message"
             />
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-              <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                <div className="w-full sm:w-auto">
-                  <label htmlFor="language-tabs" className="block text-sm font-medium text-foreground mb-1.5">Reply Language:</label>
-                  <Tabs defaultValue="en" onValueChange={(value) => setLanguage(value as 'en' | 'hi')} id="language-tabs">
-                    <TabsList className="grid w-full grid-cols-2 sm:w-[180px]">
-                      <TabsTrigger value="en">English</TabsTrigger>
-                      <TabsTrigger value="hi">Hinglish</TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                </div>
-                <div className="w-full sm:w-auto">
-                  <label htmlFor="tone-select" className="block text-sm font-medium text-foreground mb-1.5">Reply Tone:</label>
-                  <Select
-                    value={selectedTone === undefined ? DEFAULT_TONE_ITEM_VALUE : selectedTone} 
-                    onValueChange={(value: string) => {
-                      if (value === DEFAULT_TONE_ITEM_VALUE) {
-                        setSelectedTone(undefined);
-                      } else {
-                        setSelectedTone(value as NonNullable<GenerateSmartReplyInput['tone']>);
-                      }
-                    }}
-                  >
-                    <SelectTrigger id="tone-select" className="w-full sm:w-[180px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={DEFAULT_TONE_ITEM_VALUE}>✨ Witty (Default)</SelectItem>
-                      {toneOptions.map(t => (
-                        <SelectItem key={t.value} value={t.value}>
-                          {t.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="w-full sm:w-auto">
+                <Label htmlFor="language-tabs" className="block text-sm font-medium text-foreground mb-1.5">Reply Language:</Label>
+                <Tabs defaultValue="en" onValueChange={(value) => setLanguage(value as 'en' | 'hi')} id="language-tabs">
+                  <TabsList className="grid w-full grid-cols-2 sm:w-[180px]">
+                    <TabsTrigger value="en">English</TabsTrigger>
+                    <TabsTrigger value="hi">Hinglish</TabsTrigger>
+                  </TabsList>
+                </Tabs>
               </div>
-              <Button 
-                onClick={handleGenerateReplies} 
-                disabled={isLoading || !message.trim()} 
-                className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105"
-                size="lg"
-              >
-                {isLoading ? (
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                ) : (
-                  <Sparkles className="mr-2 h-5 w-5" />
-                )}
-                Generate
-              </Button>
+              <div className="w-full sm:w-auto">
+                <Label htmlFor="tone-select" className="block text-sm font-medium text-foreground mb-1.5">Reply Tone:</Label>
+                <Select
+                  value={selectedTone === undefined ? DEFAULT_TONE_ITEM_VALUE : selectedTone} 
+                  onValueChange={(value: string) => {
+                    if (value === DEFAULT_TONE_ITEM_VALUE) {
+                      setSelectedTone(undefined);
+                    } else {
+                      setSelectedTone(value as NonNullable<GenerateSmartReplyInput['tone']>);
+                    }
+                  }}
+                >
+                  <SelectTrigger id="tone-select" className="w-full sm:w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={DEFAULT_TONE_ITEM_VALUE}>✨ Witty (Default)</SelectItem>
+                    {toneOptions.map(t => (
+                      <SelectItem key={t.value} value={t.value}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+
+            <div className="space-y-4 pt-2 border-t border-border/50">
+              <div>
+                <Label htmlFor="sender-type-select" className="block text-sm font-medium text-foreground mb-1.5">👤 Who is this from?</Label>
+                <Select
+                  value={senderType === undefined ? DEFAULT_SENDER_TYPE_VALUE : senderType}
+                  onValueChange={(value: string) => {
+                    if (value === DEFAULT_SENDER_TYPE_VALUE) {
+                      setSenderType(undefined);
+                    } else {
+                      setSenderType(value as NonNullable<GenerateSmartReplyInput['senderType']>);
+                    }
+                  }}
+                >
+                  <SelectTrigger id="sender-type-select" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={DEFAULT_SENDER_TYPE_VALUE}>Select sender (Optional)</SelectItem>
+                    {senderTypeOptions.map(t => (
+                      <SelectItem key={t.value} value={t.value}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="relationship-vibe-select" className="block text-sm font-medium text-foreground mb-1.5">❤️ What’s the vibe?</Label>
+                <Select
+                  value={relationshipVibe === undefined ? DEFAULT_RELATIONSHIP_VIBE_VALUE : relationshipVibe}
+                  onValueChange={(value: string) => {
+                    if (value === DEFAULT_RELATIONSHIP_VIBE_VALUE) {
+                      setRelationshipVibe(undefined);
+                    } else {
+                      setRelationshipVibe(value as NonNullable<GenerateSmartReplyInput['relationshipVibe']>);
+                    }
+                  }}
+                >
+                  <SelectTrigger id="relationship-vibe-select" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={DEFAULT_RELATIONSHIP_VIBE_VALUE}>Select vibe (Optional)</SelectItem>
+                    {relationshipVibeOptions.map(t => (
+                      <SelectItem key={t.value} value={t.value}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="timing-select" className="block text-sm font-medium text-foreground mb-1.5">🕒 Timing of the message:</Label>
+                 <Select
+                  value={timing === undefined ? DEFAULT_TIMING_VALUE : timing}
+                  onValueChange={(value: string) => {
+                    if (value === DEFAULT_TIMING_VALUE) {
+                      setTiming(undefined);
+                    } else {
+                      setTiming(value as NonNullable<GenerateSmartReplyInput['timing']>);
+                    }
+                  }}
+                >
+                  <SelectTrigger id="timing-select" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={DEFAULT_TIMING_VALUE}>Select timing (Optional)</SelectItem>
+                    {timingOptions.map(t => (
+                      <SelectItem key={t.value} value={t.value}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="additional-context" className="block text-sm font-medium text-foreground mb-1.5">📝 Context (optional):</Label>
+                <Textarea
+                  id="additional-context"
+                  placeholder="e.g., We argued last night, now he texted hey"
+                  value={additionalContext}
+                  onChange={(e) => setAdditionalContext(e.target.value)}
+                  rows={2}
+                  className="resize-none text-base"
+                  aria-label="Additional context"
+                />
+              </div>
+            </div>
+            
+            <Button 
+              onClick={handleGenerateReplies} 
+              disabled={isLoading || !message.trim()} 
+              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105"
+              size="lg"
+            >
+              {isLoading ? (
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              ) : (
+                <Sparkles className="mr-2 h-5 w-5" />
+              )}
+              Generate Replies
+            </Button>
           </CardContent>
         </Card>
 
