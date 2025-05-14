@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, type FC } from 'react';
@@ -5,15 +6,32 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { generateSmartReply } from '@/ai/flows/generate-smart-reply';
 import type { GenerateSmartReplyInput, GenerateSmartReplyOutput } from '@/ai/flows/generate-smart-reply';
 import { useToast } from "@/hooks/use-toast";
 import { ReplyCard } from '@/components/reply-card';
 import { MessageSquare, Sparkles, Loader2 } from 'lucide-react';
 
+const toneOptions: { value: NonNullable<GenerateSmartReplyInput['tone']>; label: string }[] = [
+  { value: "funny", label: "😂 Funny" },
+  { value: "flirty", label: "😘 Flirty" },
+  { value: "savage", label: "😈 Savage" },
+  { value: "sweet", label: "😇 Sweet" },
+  { value: "sarcastic", label: "😒 Sarcastic" },
+  { value: "formal", label: "👔 Formal" },
+];
+
 const ReplyCraftPage: FC = () => {
   const [message, setMessage] = useState<string>('');
   const [language, setLanguage] = useState<GenerateSmartReplyInput['language']>('en');
+  const [selectedTone, setSelectedTone] = useState<GenerateSmartReplyInput['tone']>(undefined);
   const [replies, setReplies] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +47,7 @@ const ReplyCraftPage: FC = () => {
     setReplies([]);
 
     try {
-      const input: GenerateSmartReplyInput = { message, language };
+      const input: GenerateSmartReplyInput = { message, language, tone: selectedTone };
       const result: GenerateSmartReplyOutput = await generateSmartReply(input);
       setReplies(result.replies);
       if (result.replies.length === 0) {
@@ -98,20 +116,43 @@ const ReplyCraftPage: FC = () => {
               className="resize-none text-base border-2 focus:border-primary focus:ring-primary"
               aria-label="Incoming message"
             />
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-              <div className="w-full sm:w-auto">
-                <label htmlFor="language-tabs" className="block text-sm font-medium text-foreground mb-1.5">Reply Language:</label>
-                <Tabs defaultValue="en" onValueChange={(value) => setLanguage(value as 'en' | 'hi')} id="language-tabs">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="en">English</TabsTrigger>
-                    <TabsTrigger value="hi">Hinglish</TabsTrigger>
-                  </TabsList>
-                </Tabs>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                <div className="w-full sm:w-auto">
+                  <label htmlFor="language-tabs" className="block text-sm font-medium text-foreground mb-1.5">Reply Language:</label>
+                  <Tabs defaultValue="en" onValueChange={(value) => setLanguage(value as 'en' | 'hi')} id="language-tabs">
+                    <TabsList className="grid w-full grid-cols-2 sm:w-[180px]">
+                      <TabsTrigger value="en">English</TabsTrigger>
+                      <TabsTrigger value="hi">Hinglish</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+                <div className="w-full sm:w-auto">
+                  <label htmlFor="tone-select" className="block text-sm font-medium text-foreground mb-1.5">Reply Tone:</label>
+                  <Select
+                    value={selectedTone || ""} 
+                    onValueChange={(value: string) => {
+                      setSelectedTone(value === "" ? undefined : value as NonNullable<GenerateSmartReplyInput['tone']>);
+                    }}
+                  >
+                    <SelectTrigger id="tone-select" className="w-full sm:w-[180px]">
+                      <SelectValue placeholder="✨ Witty (Default)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">✨ Witty (Default)</SelectItem>
+                      {toneOptions.map(t => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <Button 
                 onClick={handleGenerateReplies} 
                 disabled={isLoading || !message.trim()} 
-                className="w-full sm:w-auto mt-2 sm:mt-0 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105"
+                className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105"
                 size="lg"
               >
                 {isLoading ? (

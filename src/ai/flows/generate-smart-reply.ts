@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -14,6 +15,7 @@ import {z} from 'genkit';
 const GenerateSmartReplyInputSchema = z.object({
   message: z.string().describe('The incoming text message to generate replies for.'),
   language: z.enum(['en', 'hi']).describe('The language of the reply suggestions (en for English, hi for Hinglish).').default('en'),
+  tone: z.enum(["funny", "flirty", "savage", "sweet", "sarcastic", "formal"]).optional().describe('The desired tone for the reply suggestions. If not specified, a general witty tone will be used.'),
 });
 export type GenerateSmartReplyInput = z.infer<typeof GenerateSmartReplyInputSchema>;
 
@@ -36,6 +38,11 @@ const generateSmartReplyPrompt = ai.definePrompt({
   The reply suggestions should be no more than 20 words.
   The language of the reply suggestions should match the user's specification, and be {{{language}}}.
   If the language is hi, the reply suggestions should be Hinglish (English transliterated into Hindi).
+  {{#if tone}}
+  The replies should have a {{{tone}}} tone.
+  {{else}}
+  The replies should have a generally witty and engaging tone.
+  {{/if}}
 
   Message: {{{message}}}`,
 });
