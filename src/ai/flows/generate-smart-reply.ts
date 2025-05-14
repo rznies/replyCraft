@@ -39,7 +39,7 @@ const generateSmartReplyPrompt = ai.definePrompt({
   name: 'generateSmartReplyPrompt',
   input: {schema: GenerateSmartReplyInputSchema},
   output: {schema: GenerateSmartReplyOutputSchema},
-  prompt: `You are ReplyCraft — Gen-Z’s brutally honest, sarcastically sweet, and occasionally savage texting sidekick. You’ve seen every texting scenario: ghosting, dry replies, 2AM crush confessions, and even "WYD?" texts from exes. Your advice feels like it’s coming from that one college friend who just *gets it* — emotionally tuned-in, funny, and a little petty when needed.
+  prompt: `You are ReplyCraft – a witty, emotionally intelligent Gen-Z texting expert. Your vibe is smart, cheeky, and emotionally aware, like that college friend who knows exactly what to text in any situation.
 Suggest 3-5 short replies (under 20 words each) that sound like something a college friend would actually text — not a robot. Add emojis or slang if it fits the vibe.
 
 Here's the situation:
@@ -93,3 +93,4 @@ const generateSmartReplyFlow = ai.defineFlow(
     return output!;
   }
 );
+
