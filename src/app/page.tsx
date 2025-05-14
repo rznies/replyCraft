@@ -28,6 +28,8 @@ const toneOptions: { value: NonNullable<GenerateSmartReplyInput['tone']>; label:
   { value: "formal", label: "👔 Formal" },
 ];
 
+const DEFAULT_TONE_ITEM_VALUE = "__replycraft_default_tone__";
+
 const ReplyCraftPage: FC = () => {
   const [message, setMessage] = useState<string>('');
   const [language, setLanguage] = useState<GenerateSmartReplyInput['language']>('en');
@@ -130,16 +132,20 @@ const ReplyCraftPage: FC = () => {
                 <div className="w-full sm:w-auto">
                   <label htmlFor="tone-select" className="block text-sm font-medium text-foreground mb-1.5">Reply Tone:</label>
                   <Select
-                    value={selectedTone || ""} 
+                    value={selectedTone === undefined ? DEFAULT_TONE_ITEM_VALUE : selectedTone} 
                     onValueChange={(value: string) => {
-                      setSelectedTone(value === "" ? undefined : value as NonNullable<GenerateSmartReplyInput['tone']>);
+                      if (value === DEFAULT_TONE_ITEM_VALUE) {
+                        setSelectedTone(undefined);
+                      } else {
+                        setSelectedTone(value as NonNullable<GenerateSmartReplyInput['tone']>);
+                      }
                     }}
                   >
                     <SelectTrigger id="tone-select" className="w-full sm:w-[180px]">
-                      <SelectValue placeholder="✨ Witty (Default)" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">✨ Witty (Default)</SelectItem>
+                      <SelectItem value={DEFAULT_TONE_ITEM_VALUE}>✨ Witty (Default)</SelectItem>
                       {toneOptions.map(t => (
                         <SelectItem key={t.value} value={t.value}>
                           {t.label}
@@ -197,3 +203,4 @@ const ReplyCraftPage: FC = () => {
 };
 
 export default ReplyCraftPage;
+
