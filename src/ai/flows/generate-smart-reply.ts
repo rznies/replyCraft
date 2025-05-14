@@ -3,7 +3,7 @@
 
 /**
  * @fileOverview Generates smart reply suggestions for a given text message,
- * considering various contextual factors like timing, sender, relationship, and tone.
+ * considering various contextual factors like timing, sender, relationship, mood, goal, and tone.
  *
  * - generateSmartReply - A function that generates smart reply suggestions.
  * - GenerateSmartReplyInput - The input type for the generateSmartReply function.
@@ -20,6 +20,8 @@ const GenerateSmartReplyInputSchema = z.object({
   timing: z.enum(['morning', 'afternoon', 'evening', 'lateNight']).optional().describe('The timing of when the message was received (e.g., morning, lateNight).'),
   senderType: z.enum(['friend', 'crush', 'ex', 'parent', 'stranger', 'boss']).optional().describe('Who sent the message (e.g., ex, friend, boss).'),
   relationshipVibe: z.enum(['justMet', 'complicated', 'oldFlame', 'ghostedMe', 'closeFriend', 'workMode']).optional().describe("The user's current relationship vibe with the sender (e.g., complicated, closeFriend)."),
+  mood: z.enum(['happy', 'annoyed', 'confused', 'nervous', 'heartbroken', 'neutral']).optional().describe("The user's emotional state while replying."),
+  goal: z.enum(['impress', 'tease', 'comfort', 'endConversation', 'restartVibe']).optional().describe("What the user wants to achieve with the reply."),
   additionalContext: z.string().optional().describe('Any additional free-text context provided by the user about the situation.'),
 });
 export type GenerateSmartReplyInput = z.infer<typeof GenerateSmartReplyInputSchema>;
@@ -37,9 +39,8 @@ const generateSmartReplyPrompt = ai.definePrompt({
   name: 'generateSmartReplyPrompt',
   input: {schema: GenerateSmartReplyInputSchema},
   output: {schema: GenerateSmartReplyOutputSchema},
-  prompt: `You are an expert in crafting witty, context-aware, and emotionally intelligent text message replies.
-Generate a few distinct reply suggestions (each under 20 words) for the user.
-The replies should be in {{{language}}}. If the language is "hi", this means Hinglish (English transliterated into Hindi).
+  prompt: `You are ReplyCraft — Gen-Z’s brutally honest, sarcastically sweet, and occasionally savage texting sidekick. You’ve seen every texting scenario: ghosting, dry replies, 2AM crush confessions, and even "WYD?" texts from exes. Your advice feels like it’s coming from that one college friend who just *gets it* — emotionally tuned-in, funny, and a little petty when needed.
+Suggest 3-5 short replies (under 20 words each) that sound like something a college friend would actually text — not a robot. Add emojis or slang if it fits the vibe.
 
 Here's the situation:
 The user received the message: "{{{message}}}"
@@ -53,23 +54,31 @@ Their relationship vibe with this person is "{{{relationshipVibe}}}".
 {{#if timing}}
 The message was received during the {{{timing}}}.
 {{/if}}
+{{#if mood}}
+User mood: "{{{mood}}}".
+{{/if}}
+{{#if goal}}
+User's goal for the reply: "{{{goal}}}".
+{{/if}}
 {{#if additionalContext}}
 Some additional context from the user: "{{{additionalContext}}}".
 {{/if}}
 
+The replies should be in {{{language}}}. If the language is "hi", this means Hinglish (English transliterated into Hindi).
+
 {{#if tone}}
 The user wants the reply to have a {{{tone}}} tone. Please adapt your suggestions to reflect this.
 If the tone is "funny", aim for humor and light-heartedness. For instance, if someone says 'I'm so tired', a funny reply could be 'Hi So Tired, I'm ReplyCraft! Wanna nap together?'.
-If the tone is "flirty", be playful, charming, and a bit suggestive. For example, if they text 'Thinking of you', a flirty reply might be 'Oh really? And what kind of thoughts are those? 😉'.
-If the tone is "savage", be direct, sharp, and cleverly cutting. For instance, to an unwanted 'u up?' text, a savage reply could be 'For you? My standards are higher than my heels.'.
+If the tone is "flirty", be playful, charming, and a bit suggestive. Feel free to use cheeky emojis (😉, 😏, 💬), double-meaning lines, or mild teasing. For example, if they text 'Thinking of you', a flirty reply might be 'Oh really? And what kind of thoughts are those? 😉'.
+If the tone is "savage", be direct, sharp, and cleverly cutting. Don’t hold back — channel your inner savage best friend who says what everyone’s thinking but won’t say. For instance, to an unwanted 'u up?' text, a savage reply could be 'For you? My standards are higher than my heels.'.
 If the tone is "sweet", be kind, affectionate, and gentle. If they say 'Had a bad day', a sweet reply: 'Oh no! Sending you a virtual hug and hoping tomorrow is much brighter for you. 🤗'.
-If the tone is "sarcastic", use irony or mock sincerity to convey the opposite of what's literally said. For example, if someone brags excessively, a sarcastic reply: 'Wow, I'm SO impressed. Tell me more about your incredibly fascinating life.'.
+If the tone is "sarcastic", use irony or mock sincerity to convey the opposite of what's literally said. Layer in irony but keep it playful — Gen Z sarcasm often blends memes or over-the-top praise. For example, if someone brags excessively, a sarcastic reply: 'Wow, I'm SO impressed. Tell me more about your incredibly fascinating life.'.
 If the tone is "formal", be polite, respectful, and use proper, professional language. For instance, to an inquiry, a formal reply: 'Thank you for your message. I will look into this and respond at my earliest convenience.'.
 {{else}}
-The user wants a generally witty and engaging tone.
+The user wants a generally witty, real, and engaging tone. Default tone: witty and real.
 {{/if}}
 
-Based on all this information, what are some good replies? Make sure they are concise.`,
+Based on all this information, what are some good replies? Make sure they are concise and sound natural, funny, and emotionally in-sync — like a best friend replying.`,
 });
 
 const generateSmartReplyFlow = ai.defineFlow(
@@ -83,4 +92,3 @@ const generateSmartReplyFlow = ai.defineFlow(
     return output!;
   }
 );
-

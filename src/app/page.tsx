@@ -28,7 +28,7 @@ const toneOptions: { value: NonNullable<GenerateSmartReplyInput['tone']>; label:
   { value: "sarcastic", label: "😒 Sarcastic" },
   { value: "formal", label: "👔 Formal" },
 ];
-const DEFAULT_TONE_ITEM_VALUE = "__replycraft_default_tone__";
+const DEFAULT_TONE_VALUE = "__replycraft_default_tone__";
 
 const timingOptions: { value: NonNullable<GenerateSmartReplyInput['timing']>; label: string }[] = [
   { value: 'morning', label: '🌞 Morning' },
@@ -58,6 +58,25 @@ const relationshipVibeOptions: { value: NonNullable<GenerateSmartReplyInput['rel
 ];
 const DEFAULT_RELATIONSHIP_VIBE_VALUE = "__replycraft_default_relationship_vibe__";
 
+const moodOptions: { value: NonNullable<GenerateSmartReplyInput['mood']>; label: string }[] = [
+    { value: 'happy', label: '😊 Happy' },
+    { value: 'annoyed', label: '😠 Annoyed' },
+    { value: 'confused', label: '😕 Confused' },
+    { value: 'nervous', label: '😬 Nervous' },
+    { value: 'heartbroken', label: '💔 Heartbroken' },
+    { value: 'neutral', label: '😐 Neutral' },
+];
+const DEFAULT_MOOD_VALUE = "__replycraft_default_mood__";
+
+const goalOptions: { value: NonNullable<GenerateSmartReplyInput['goal']>; label: string }[] = [
+    { value: 'impress', label: '😎 Impress' },
+    { value: 'tease', label: '😜 Tease' },
+    { value: 'comfort', label: '🤗 Comfort' },
+    { value: 'endConversation', label: '👋 End Conversation' },
+    { value: 'restartVibe', label: '🔄 Restart Vibe' },
+];
+const DEFAULT_GOAL_VALUE = "__replycraft_default_goal__";
+
 
 const ReplyCraftPage: FC = () => {
   const [message, setMessage] = useState<string>('');
@@ -66,6 +85,8 @@ const ReplyCraftPage: FC = () => {
   const [timing, setTiming] = useState<GenerateSmartReplyInput['timing']>(undefined);
   const [senderType, setSenderType] = useState<GenerateSmartReplyInput['senderType']>(undefined);
   const [relationshipVibe, setRelationshipVibe] = useState<GenerateSmartReplyInput['relationshipVibe']>(undefined);
+  const [selectedMood, setSelectedMood] = useState<GenerateSmartReplyInput['mood']>(undefined);
+  const [selectedGoal, setSelectedGoal] = useState<GenerateSmartReplyInput['goal']>(undefined);
   const [additionalContext, setAdditionalContext] = useState<string>('');
 
   const [replies, setReplies] = useState<string[]>([]);
@@ -90,7 +111,9 @@ const ReplyCraftPage: FC = () => {
         timing,
         senderType,
         relationshipVibe,
-        additionalContext: additionalContext.trim() || undefined, // Send undefined if empty
+        mood: selectedMood,
+        goal: selectedGoal,
+        additionalContext: additionalContext.trim() || undefined,
       };
       const result: GenerateSmartReplyOutput = await generateSmartReply(input);
       setReplies(result.replies);
@@ -161,33 +184,33 @@ const ReplyCraftPage: FC = () => {
               aria-label="Incoming message"
             />
             
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="w-full sm:w-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
                 <Label htmlFor="language-tabs" className="block text-sm font-medium text-foreground mb-1.5">Reply Language:</Label>
                 <Tabs defaultValue="en" onValueChange={(value) => setLanguage(value as 'en' | 'hi')} id="language-tabs">
-                  <TabsList className="grid w-full grid-cols-2 sm:w-[180px]">
+                  <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="en">English</TabsTrigger>
                     <TabsTrigger value="hi">Hinglish</TabsTrigger>
                   </TabsList>
                 </Tabs>
               </div>
-              <div className="w-full sm:w-auto">
+              <div>
                 <Label htmlFor="tone-select" className="block text-sm font-medium text-foreground mb-1.5">Reply Tone:</Label>
                 <Select
-                  value={selectedTone === undefined ? DEFAULT_TONE_ITEM_VALUE : selectedTone} 
+                  value={selectedTone === undefined ? DEFAULT_TONE_VALUE : selectedTone} 
                   onValueChange={(value: string) => {
-                    if (value === DEFAULT_TONE_ITEM_VALUE) {
+                    if (value === DEFAULT_TONE_VALUE) {
                       setSelectedTone(undefined);
                     } else {
                       setSelectedTone(value as NonNullable<GenerateSmartReplyInput['tone']>);
                     }
                   }}
                 >
-                  <SelectTrigger id="tone-select" className="w-full sm:w-[180px]">
+                  <SelectTrigger id="tone-select" className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={DEFAULT_TONE_ITEM_VALUE}>✨ Witty (Default)</SelectItem>
+                    <SelectItem value={DEFAULT_TONE_VALUE}>✨ Witty (Default)</SelectItem>
                     {toneOptions.map(t => (
                       <SelectItem key={t.value} value={t.value}>
                         {t.label}
@@ -198,77 +221,132 @@ const ReplyCraftPage: FC = () => {
               </div>
             </div>
 
-            <div className="space-y-4 pt-2 border-t border-border/50">
-              <div>
-                <Label htmlFor="sender-type-select" className="block text-sm font-medium text-foreground mb-1.5">👤 Who is this from?</Label>
-                <Select
-                  value={senderType === undefined ? DEFAULT_SENDER_TYPE_VALUE : senderType}
-                  onValueChange={(value: string) => {
-                    if (value === DEFAULT_SENDER_TYPE_VALUE) {
-                      setSenderType(undefined);
-                    } else {
-                      setSenderType(value as NonNullable<GenerateSmartReplyInput['senderType']>);
-                    }
-                  }}
-                >
-                  <SelectTrigger id="sender-type-select" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={DEFAULT_SENDER_TYPE_VALUE}>Select sender (Optional)</SelectItem>
-                    {senderTypeOptions.map(t => (
-                      <SelectItem key={t.value} value={t.value}>
-                        {t.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <div className="space-y-4 pt-4 border-t border-border/50">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="sender-type-select" className="block text-sm font-medium text-foreground mb-1.5">👤 Who is this from?</Label>
+                  <Select
+                    value={senderType === undefined ? DEFAULT_SENDER_TYPE_VALUE : senderType}
+                    onValueChange={(value: string) => {
+                      if (value === DEFAULT_SENDER_TYPE_VALUE) {
+                        setSenderType(undefined);
+                      } else {
+                        setSenderType(value as NonNullable<GenerateSmartReplyInput['senderType']>);
+                      }
+                    }}
+                  >
+                    <SelectTrigger id="sender-type-select" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={DEFAULT_SENDER_TYPE_VALUE}>Select sender (Optional)</SelectItem>
+                      {senderTypeOptions.map(t => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="relationship-vibe-select" className="block text-sm font-medium text-foreground mb-1.5">❤️ What’s the vibe?</Label>
+                  <Select
+                    value={relationshipVibe === undefined ? DEFAULT_RELATIONSHIP_VIBE_VALUE : relationshipVibe}
+                    onValueChange={(value: string) => {
+                      if (value === DEFAULT_RELATIONSHIP_VIBE_VALUE) {
+                        setRelationshipVibe(undefined);
+                      } else {
+                        setRelationshipVibe(value as NonNullable<GenerateSmartReplyInput['relationshipVibe']>);
+                      }
+                    }}
+                  >
+                    <SelectTrigger id="relationship-vibe-select" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={DEFAULT_RELATIONSHIP_VIBE_VALUE}>Select vibe (Optional)</SelectItem>
+                      {relationshipVibeOptions.map(t => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              <div>
-                <Label htmlFor="relationship-vibe-select" className="block text-sm font-medium text-foreground mb-1.5">❤️ What’s the vibe?</Label>
-                <Select
-                  value={relationshipVibe === undefined ? DEFAULT_RELATIONSHIP_VIBE_VALUE : relationshipVibe}
-                  onValueChange={(value: string) => {
-                    if (value === DEFAULT_RELATIONSHIP_VIBE_VALUE) {
-                      setRelationshipVibe(undefined);
-                    } else {
-                      setRelationshipVibe(value as NonNullable<GenerateSmartReplyInput['relationshipVibe']>);
-                    }
-                  }}
-                >
-                  <SelectTrigger id="relationship-vibe-select" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={DEFAULT_RELATIONSHIP_VIBE_VALUE}>Select vibe (Optional)</SelectItem>
-                    {relationshipVibeOptions.map(t => (
-                      <SelectItem key={t.value} value={t.value}>
-                        {t.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="timing-select" className="block text-sm font-medium text-foreground mb-1.5">🕒 Timing of the message:</Label>
+                  <Select
+                    value={timing === undefined ? DEFAULT_TIMING_VALUE : timing}
+                    onValueChange={(value: string) => {
+                      if (value === DEFAULT_TIMING_VALUE) {
+                        setTiming(undefined);
+                      } else {
+                        setTiming(value as NonNullable<GenerateSmartReplyInput['timing']>);
+                      }
+                    }}
+                  >
+                    <SelectTrigger id="timing-select" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={DEFAULT_TIMING_VALUE}>Select timing (Optional)</SelectItem>
+                      {timingOptions.map(t => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                 <div>
+                  <Label htmlFor="mood-select" className="block text-sm font-medium text-foreground mb-1.5">ემო Mood:</Label>
+                  <Select
+                    value={selectedMood === undefined ? DEFAULT_MOOD_VALUE : selectedMood}
+                    onValueChange={(value: string) => {
+                      if (value === DEFAULT_MOOD_VALUE) {
+                        setSelectedMood(undefined);
+                      } else {
+                        setSelectedMood(value as NonNullable<GenerateSmartReplyInput['mood']>);
+                      }
+                    }}
+                  >
+                    <SelectTrigger id="mood-select" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={DEFAULT_MOOD_VALUE}>Select mood (Optional)</SelectItem>
+                      {moodOptions.map(t => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-
+             
               <div>
-                <Label htmlFor="timing-select" className="block text-sm font-medium text-foreground mb-1.5">🕒 Timing of the message:</Label>
-                 <Select
-                  value={timing === undefined ? DEFAULT_TIMING_VALUE : timing}
+                <Label htmlFor="goal-select" className="block text-sm font-medium text-foreground mb-1.5">🎯 Goal for Reply:</Label>
+                <Select
+                  value={selectedGoal === undefined ? DEFAULT_GOAL_VALUE : selectedGoal}
                   onValueChange={(value: string) => {
-                    if (value === DEFAULT_TIMING_VALUE) {
-                      setTiming(undefined);
+                    if (value === DEFAULT_GOAL_VALUE) {
+                      setSelectedGoal(undefined);
                     } else {
-                      setTiming(value as NonNullable<GenerateSmartReplyInput['timing']>);
+                      setSelectedGoal(value as NonNullable<GenerateSmartReplyInput['goal']>);
                     }
                   }}
                 >
-                  <SelectTrigger id="timing-select" className="w-full">
+                  <SelectTrigger id="goal-select" className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={DEFAULT_TIMING_VALUE}>Select timing (Optional)</SelectItem>
-                    {timingOptions.map(t => (
+                    <SelectItem value={DEFAULT_GOAL_VALUE}>Select goal (Optional)</SelectItem>
+                    {goalOptions.map(t => (
                       <SelectItem key={t.value} value={t.value}>
                         {t.label}
                       </SelectItem>
@@ -338,4 +416,3 @@ const ReplyCraftPage: FC = () => {
 };
 
 export default ReplyCraftPage;
-
