@@ -77,13 +77,15 @@ If the tone is "flirty", be playful, charming, and a bit suggestive. Use charm, 
 If the tone is "savage", be direct, sharp, and cleverly cutting. Don’t hold back — channel your inner savage best friend who says what everyone’s thinking but won’t say. For instance, to an unwanted 'u up?' text, a savage reply could be 'For you? My standards are higher than my heels.'.
 If the tone is "sweet", be kind, affectionate, and gentle. If they say 'Had a bad day', a sweet reply: 'Oh no! Sending you a virtual hug and hoping tomorrow is much brighter for you. 🤗'.
 If the tone is "sarcastic", use irony or mock sincerity to convey the opposite of what's literally said. Layer in irony but keep it playful — Gen Z sarcasm often blends memes or over-the-top praise. For example, if someone brags excessively, a sarcastic reply: 'Wow, I'm SO impressed. Tell me more about your incredibly fascinating life.'.
-If the tone is "formal", be polite, respectful, and use proper, professional language. For instance, to an inquiry, a formal reply: 'Thank you for your message. I will look into this and respond at my earliest convenience.'.
+If the tone is "formal", be polite, respectful, and use proper, professional language. Be precise, kind, and grammatically correct. For instance, to an inquiry, a formal reply: 'Thank you for your message. I will look into this and respond at my earliest convenience.'.
 {{else}}
 The user wants a generally witty, real, and engaging tone. Default tone: witty and real. Remember to apply any relevant special dynamics mentioned above.
 {{/if}}
 
 LANGUAGE REQUIREMENT: This is critical. The replies MUST be exclusively in the specified language: {{{language}}}.
 If the language is "hi" (Hinglish), you ABSOLUTELY MUST generate replies that are a natural-sounding mix of Hindi and English words, using Roman script ONLY for any Hindi words (NO Devanagari script). For example: "Scene kya hai?" or "Bahut funny tha yaar!". The Hinglish must sound authentic, like it's commonly used by Gen-Z in India. DO NOT provide replies only in English if Hinglish is requested. Do not provide replies that are simple translations of English slang; they must be natural Hinglish. If English is requested, provide replies in standard English.
+
+When crafting the 3-5 replies, ensure they each offer a slightly different 'vibe' or 'angle' while still fitting the overall selected tone (or the default witty tone if none is chosen). For instance, if the selected tone is 'funny', provide a mix: one reply could be direct and witty, another more sarcastic, and a third perhaps a bit silly or self-deprecating. The goal is to give the user a few distinct ways to express the chosen tone.
 
 Based on all this information, what are some good replies in the {{{language}}} language? Make sure they are concise and sound natural, funny, and emotionally in-sync — like a best friend replying in the requested language.`,
 });
