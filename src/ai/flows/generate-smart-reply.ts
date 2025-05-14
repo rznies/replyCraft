@@ -76,10 +76,10 @@ If the tone is "formal", be polite, respectful, and use proper, professional lan
 The user wants a generally witty, real, and engaging tone. Default tone: witty and real.
 {{/if}}
 
-IMPORTANT: The replies MUST be in the specified language: {{{language}}}.
-If the language is "hi" (Hinglish), this means a mix of Hindi and English words, using Roman script for Hindi words. For example: "Scene kya hai?" or "Bahut funny tha yaar!". Ensure the Hinglish sounds natural, is commonly used by Gen-Z in India, and avoids Devanagari script.
+LANGUAGE REQUIREMENT: This is critical. The replies MUST be exclusively in the specified language: {{{language}}}.
+If the language is "hi" (Hinglish), you ABSOLUTELY MUST generate replies that are a natural-sounding mix of Hindi and English words, using Roman script ONLY for any Hindi words (NO Devanagari script). For example: "Scene kya hai?" or "Bahut funny tha yaar!". The Hinglish must sound authentic, like it's commonly used by Gen-Z in India. DO NOT provide replies only in English if Hinglish is requested. If English is requested, provide replies in standard English.
 
-Based on all this information, what are some good replies? Make sure they are concise and sound natural, funny, and emotionally in-sync — like a best friend replying in the requested language.`,
+Based on all this information, what are some good replies in the {{{language}}} language? Make sure they are concise and sound natural, funny, and emotionally in-sync — like a best friend replying in the requested language.`,
 });
 
 const generateSmartReplyFlow = ai.defineFlow(
