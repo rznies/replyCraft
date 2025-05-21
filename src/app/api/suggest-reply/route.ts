@@ -16,8 +16,56 @@ const GenerateSmartReplyInputAPISchema = z.object({
   additionalContext: z.string().optional(),
 });
 
+// In-memory store for IP-based rate limiting
+const ipRequestTimestamps = new Map<string, number[]>();
+const REQUEST_LIMIT = 10; // 10 requests
+const WINDOW_MS = 60 * 1000; // per 60 seconds (1 minute)
+
 export async function POST(request: NextRequest) {
   try {
+    // 1. API Key Authentication
+    const apiKey = process.env.API_ROUTE_SECRET;
+    const requestApiKey = request.headers.get('x-api-key');
+
+    if (!apiKey) {
+      console.error("API_ROUTE_SECRET is not set. Denying access.");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!requestApiKey || requestApiKey !== apiKey) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // 2. IP-based Rate Limiting
+    let ip = request.ip;
+    if (!ip) {
+      const forwardedFor = request.headers.get('x-forwarded-for');
+      if (forwardedFor) {
+        ip = forwardedFor.split(',')[0].trim();
+      }
+    }
+
+    if (!ip) {
+      console.warn("Rate limiting: Could not determine IP address. Denying access.");
+      return NextResponse.json({ error: "Could not determine client IP address." }, { status: 400 });
+    }
+
+    const now = Date.now();
+    const timestamps = ipRequestTimestamps.get(ip) || [];
+    
+    // Filter timestamps that are within the current window
+    const recentTimestamps = timestamps.filter(ts => now - ts < WINDOW_MS);
+
+    if (recentTimestamps.length >= REQUEST_LIMIT) {
+      console.warn(`Rate limit exceeded for IP: ${ip}`);
+      return NextResponse.json({ error: "Too Many Requests" }, { status: 429 });
+    }
+
+    // Add current request timestamp and update the store
+    recentTimestamps.push(now);
+    ipRequestTimestamps.set(ip, recentTimestamps);
+
+    // Proceed with request processing
     const body = await request.json();
     
     const validationResult = GenerateSmartReplyInputAPISchema.safeParse(body);
@@ -33,10 +81,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error("Error in /api/suggest-reply:", error);
-    let errorMessage = "An unknown error occurred while generating replies.";
-    if (error instanceof Error) {
-        errorMessage = error.message;
-    }
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    // Send a generic error message to the client to avoid exposing internal details
+    return NextResponse.json({ error: "An internal server error occurred. Please try again later." }, { status: 500 });
   }
 }
