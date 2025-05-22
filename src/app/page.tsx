@@ -570,7 +570,7 @@ const ReplyCraftPage: FC = () => {
 
       </main>
       <footer className="text-center py-8 text-muted-foreground text-sm">
-        <p>&copy; {new Date().getFullYear()} ReplyCraft. Keepin' it real, one text at a time.</p>
+        <p>&copy; {new Date().getFullYear()} ReplyCraft. Keepin&apos; it real, one text at a time.</p>
       </footer>
     </div>
   );

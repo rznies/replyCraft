@@ -37,13 +37,13 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. IP-based Rate Limiting
-    let ip = request.ip;
-    if (!ip) {
-      const forwardedFor = request.headers.get('x-forwarded-for');
-      if (forwardedFor) {
-        ip = forwardedFor.split(',')[0].trim();
-      }
+    let ip: string | undefined;
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    if (forwardedFor) {
+      ip = forwardedFor.split(',')[0].trim();
     }
+    // Optional: Add 'x-real-ip' as another fallback if desired, but for now,
+    // simply relying on x-forwarded-for is the minimal change to fix the TS error.
 
     if (!ip) {
       console.warn("Rate limiting: Could not determine IP address. Denying access.");
