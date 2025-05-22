@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 // Re-define the input schema here for validation, or import if sharable without 'use server' issues
 const GenerateSmartReplyInputAPISchema = z.object({
-  message: z.string().min(1, { message: "Message cannot be empty." }),
+  message: z.string().min(1, { message: "Message cannot be empty." }).max(1000, { message: "Message cannot exceed 1000 characters." }),
   language: z.enum(['en', 'hi']).default('en'),
   tone: z.enum(["funny", "flirty", "savage", "sweet", "sarcastic", "formal"]).optional(),
   timing: z.enum(['morning', 'afternoon', 'evening', 'lateNight']).optional(),
@@ -13,7 +13,7 @@ const GenerateSmartReplyInputAPISchema = z.object({
   relationshipVibe: z.enum(['justMet', 'complicated', 'oldFlame', 'ghostedMe', 'closeFriend', 'workMode']).optional(),
   mood: z.enum(['happy', 'annoyed', 'confused', 'nervous', 'heartbroken', 'neutral']).optional(),
   goal: z.enum(['impress', 'tease', 'comfort', 'endConversation', 'restartVibe']).optional(),
-  additionalContext: z.string().optional(),
+  additionalContext: z.string().max(2000, { message: "Additional context cannot exceed 2000 characters." }).optional(),
 });
 
 // In-memory store for IP-based rate limiting
